@@ -4,7 +4,7 @@
     var app = {
         isLoading: true,
         visibleCards: {},
-        selectedTimetables: [],
+        selectedTimetables: [],		
         spinner: document.querySelector('.loader'),
         cardTemplate: document.querySelector('.cardTemplate'),
         container: document.querySelector('.main'),
@@ -40,6 +40,7 @@
         }
         app.getSchedule(key, label);
         app.selectedTimetables.push({key: key, label: label});
+		app.saveSelectedTimetables(); //FB: Guarda las estaciones
         app.toggleAddDialog(false);
     });
 
@@ -167,6 +168,13 @@
 
 
     };
+	
+	//FB: Almacena las estaciones
+	// Save list of cities to localStorage.
+	app.saveSelectedTimetables = function() {
+    var selectedTimetables = JSON.stringify(app.selectedTimetables);
+    localStorage.selectedTimetables = selectedTimetables;
+  };
 
 
     /************************************************************************
@@ -183,5 +191,28 @@
     app.getSchedule('metros/1/bastille/A', 'Bastille, Direction La Défense');
     app.selectedTimetables = [
         {key: initialStationTimetable.key, label: initialStationTimetable.label}
-    ];
+		];
+		
+	//FB
+	app.selectedTimetables = localStorage.selectedTimetables;
+	  if (app.selectedTimetables) {
+		app.selectedTimetables = JSON.parse(app.selectedTimetables);
+		app.selectedTimetables.forEach(function(timetable) {
+		  app.getSchedule(timetable.key, timetable.label);
+		});
+	  } else {
+		/* The user is using the app for the first time, or the user has not
+		 * saved any cities, so show the user some fake data. A real app in this
+		 * scenario could guess the user's location via IP lookup and then inject
+		 * that data into the page.
+		 */
+		app.updateSchedules(initialStationTimetable);
+		app.selectedTimetables = [
+		  {key: initialStationTimetable.key, label: initialStationTimetable.label}
+		];
+		app.saveSelectedTimetables();
+	  }	
+	  
+	
+   
 })();
